@@ -23,34 +23,29 @@ exports.create = function(req, res) {
       });
 };
  
-// Update an existing contact in datastore.
+// Update an existing contact in wdatastore.
 exports.update = function(req, res) {
-     var index = _.findIndex(datastore.contacts , 
-               function(contact) {
-                  return contact.phone_number == req.params.id
-            })  
-         if (index != -1) {
-         datastore.contacts.splice(index, 1, 
-               {id:index,name: req.body.name, address: req.body.address , 
-                         phone_number: req.body.phone_number });
-          return res.sendStatus(200);
-          }
-          else {
-             return res.sendStatus(404);
-           }
+   Contact.findById(req.params.id, function (err, contact) {
+        if(err) { return handleError(res, err); }
+        contact.name = req.body.name
+        contact.address = req.body.address
+        contact.phone_number = req.body.phone_number
+        contact.save(function (err) {
+            if(err) { return handleError(res, err); }
+            return res.sendStatus(200, 'Update successful');
+        });
+    });
+ }
  
          
-};
  
 // Deletes a contact from datastore.
 exports.destroy = function(req, res) {
-       var elements = _.remove(datastore.contacts , 
-           function(contact) {
-              return contact.phone_number == req.params.id;
-        });  
-     if (elements.length == 1) {
-        return res.sendStatus(200);
-      } else {
-         return res.sendStatus(404);
-      }
-};
+    Contact.findById(req.params.id, function (err, contact) {
+        if(err) { return handleError(res, err); }        
+        contact.remove(function (err) {
+            if(err) { return handleError(res, err); }
+            return res.sendStatus(200,'Deleted');
+        });
+    })
+}
